@@ -773,6 +773,7 @@
     <!-- Results -->
     <div id="results">
       <div class="result-card">
+        <img id="res-photo" src="" alt="your fit" style="width:100%; max-height:380px; object-fit:cover; display:block;" />
         <div class="result-header">
           <div>
             <div class="result-header-title">FIT REPORT</div>
@@ -823,7 +824,7 @@
 
   <script>
     // ── State ──────────────────────────────────────────────────────────────
-    let currentImage = null; // { base64, mediaType }
+    let currentImage = null; // { base64, mediaType, dataUrl }
     let stream = null;
     let cameraActive = false;
     let cameraCaptured = false;
@@ -904,7 +905,7 @@
       const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
       const base64 = dataUrl.split(',')[1];
 
-      currentImage = { base64, mediaType: 'image/jpeg' };
+      currentImage = { base64, mediaType: 'image/jpeg', dataUrl };
       cameraCaptured = true;
 
       const preview = document.getElementById('camera-preview-img');
@@ -970,7 +971,7 @@
       reader.onload = (e) => {
         const dataUrl = e.target.result;
         const base64 = dataUrl.split(',')[1];
-        currentImage = { base64, mediaType: file.type };
+        currentImage = { base64, mediaType: file.type, dataUrl };
 
         document.getElementById('preview-img').src = dataUrl;
         document.getElementById('preview-wrap').style.display = 'block';
@@ -1060,6 +1061,9 @@
 
       const resultsEl = document.getElementById('results');
       resultsEl.classList.add('active');
+
+      // Photo
+      document.getElementById('res-photo').src = currentImage.dataUrl;
 
       // Emoji
       document.getElementById('res-emoji').textContent = data.emoji || '🎯';

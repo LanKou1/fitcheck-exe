@@ -63,6 +63,7 @@ export default async function handler(req, res) {
     await redis.expire(key, 86400);
   }
   if (count > DAILY_LIMIT) {
+    console.log(`[RATE_LIMITED] ip=${ip} count=${count}`);
     return res.status(429).json({
       error: "rate_limited",
       message: "You've used all your daily fits. Come back tomorrow.",
@@ -108,6 +109,7 @@ export default async function handler(req, res) {
     });
     const bouncerAnswer = bouncer.content[0].text.trim().toUpperCase();
     if (!bouncerAnswer.startsWith("YES")) {
+      console.log(`[BOUNCED] ip=${ip} lang=${lang} mediaType=${mediaType}`);
       return res.status(400).json({ error: "no_outfit" });
     }
   } catch (err) {
@@ -153,6 +155,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Failed to parse AI response" });
     }
 
+    console.log(`[RATED] ip=${ip} lang=${lang} score=${result.score} verdict=${result.verdict}`);
     return res.status(200).json(result);
   } catch (err) {
     console.error(err);

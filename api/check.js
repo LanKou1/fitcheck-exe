@@ -68,7 +68,7 @@ export default async function handler(req, res) {
     });
   }
 
-  const { image, mediaType } = req.body;
+  const { image, mediaType, lang } = req.body;
 
   // Validate inputs
   if (!image || !mediaType) {
@@ -115,10 +115,14 @@ export default async function handler(req, res) {
   }
 
   try {
+    const langInstruction = lang === 'zh'
+      ? "\n\nRespond entirely in Simplified Chinese (简体中文). All text fields (verdict, verdictSub, category names, comments, roast, tips) must be in Chinese."
+      : "\n\nRespond entirely in English.";
+
     const message = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+      system: SYSTEM_PROMPT + langInstruction,
       messages: [
         {
           role: "user",

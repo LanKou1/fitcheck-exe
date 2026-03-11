@@ -678,6 +678,22 @@
       letter-spacing: 2px;
     }
 
+    .lang-btn {
+      background: none;
+      border: none;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 4px 8px;
+      transition: color 0.15s;
+    }
+
+    .lang-btn.active { color: var(--accent); border-bottom: 1px solid var(--accent); }
+    .lang-btn:hover:not(.active) { color: var(--text); }
+
     @keyframes dropIn {
       from { opacity: 0; transform: translateY(-20px) scale(0.95); }
       to { opacity: 1; transform: translateY(0) scale(1); }
@@ -698,6 +714,11 @@
       <div class="badge">⚡ AI-Powered Fashion Police</div>
       <h1>FIT<span>CHECK</span></h1>
       <p class="subtitle">.exe — v2.0 — drip detector activated</p>
+      <div style="margin-top:16px;">
+        <button class="lang-btn active" id="lang-en" onclick="setLang('en')">EN</button>
+        <span style="color:var(--border); margin:0 4px;">|</span>
+        <button class="lang-btn" id="lang-zh" onclick="setLang('zh')">中文</button>
+      </div>
     </div>
 
     <!-- Input card -->
@@ -829,6 +850,13 @@
     let cameraActive = false;
     let cameraCaptured = false;
     let facingMode = 'user'; // 'user' = front, 'environment' = back
+    let lang = 'en';
+
+    function setLang(l) {
+      lang = l;
+      document.getElementById('lang-en').classList.toggle('active', l === 'en');
+      document.getElementById('lang-zh').classList.toggle('active', l === 'zh');
+    }
 
     const LOADING_MESSAGES = [
       "Consulting the drip council...",
@@ -1024,7 +1052,7 @@
         const res = await fetch('/api/check', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: currentImage.base64, mediaType: currentImage.mediaType }),
+          body: JSON.stringify({ image: currentImage.base64, mediaType: currentImage.mediaType, lang }),
         });
 
         clearInterval(msgInterval);

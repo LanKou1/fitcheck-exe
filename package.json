@@ -1,0 +1,8 @@
+{
+  "name": "fitcheck-exe",
+  "version": "1.0.0",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@upstash/redis": "^1.34.3"
+  }
+}

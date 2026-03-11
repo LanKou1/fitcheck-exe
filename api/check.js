@@ -84,6 +84,36 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Image too large (max 5MB)" });
   }
 
+  // Bouncer — cheap Haiku pre-check before expensive Sonnet call
+  try {
+    const bouncer = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 10,
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              source: { type: "base64", media_type: mediaType, data: image },
+            },
+            {
+              type: "text",
+              text: "Does this image contain clothing or an outfit — whether worn by a person, laid flat, or displayed in any way? Answer YES or NO only.",
+            },
+          ],
+        },
+      ],
+    });
+    const bouncerAnswer = bouncer.content[0].text.trim().toUpperCase();
+    if (!bouncerAnswer.startsWith("YES")) {
+      return res.status(400).json({ error: "no_outfit" });
+    }
+  } catch (err) {
+    console.error("Bouncer error:", err);
+    // If bouncer fails, let the request through rather than blocking legitimate users
+  }
+
   try {
     const message = await client.messages.create({
       model: "claude-sonnet-4-20250514",

@@ -752,6 +752,7 @@
         </div>
         <div class="camera-controls" id="camera-controls">
           <button class="btn btn-capture" id="cam-btn" onclick="handleCameraBtn()">▶ Start Camera</button>
+          <button class="btn btn-ghost" onclick="flipCamera()" id="flip-btn" style="display:none">🔄 Flip</button>
           <button class="btn btn-ghost" onclick="retakePhoto()" id="retake-btn" style="display:none">↩ Retake</button>
         </div>
       </div>
@@ -826,6 +827,7 @@
     let stream = null;
     let cameraActive = false;
     let cameraCaptured = false;
+    let facingMode = 'user'; // 'user' = front, 'environment' = back
 
     const LOADING_MESSAGES = [
       "Consulting the drip council...",
@@ -861,20 +863,29 @@
 
     async function startCamera() {
       try {
+        if (stream) stream.getTracks().forEach(t => t.stop());
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
+          video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }
         });
         const video = document.getElementById('video');
         video.srcObject = stream;
         video.style.display = 'block';
+        // Mirror only for front camera
+        video.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'none';
         document.getElementById('cam-placeholder').style.display = 'none';
         document.getElementById('scan-overlay').classList.add('active');
         document.getElementById('cam-btn').textContent = '📸 Capture';
+        document.getElementById('flip-btn').style.display = 'inline-block';
         cameraActive = true;
       } catch (e) {
         document.getElementById('camera-controls').style.display = 'none';
         document.getElementById('camera-denied').style.display = 'block';
       }
+    }
+
+    async function flipCamera() {
+      facingMode = facingMode === 'user' ? 'environment' : 'user';
+      await startCamera();
     }
 
     function capturePhoto() {
@@ -883,9 +894,11 @@
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
-      // Mirror to match display
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
+      // Mirror only front camera to match display
+      if (facingMode === 'user') {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+      }
       ctx.drawImage(video, 0, 0);
 
       const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
@@ -899,6 +912,7 @@
       preview.style.display = 'block';
       document.getElementById('video').style.display = 'none';
       document.getElementById('cam-btn').style.display = 'none';
+      document.getElementById('flip-btn').style.display = 'none';
       document.getElementById('retake-btn').style.display = 'inline-block';
 
       if (stream) stream.getTracks().forEach(t => t.stop());
@@ -915,6 +929,7 @@
       document.getElementById('cam-placeholder').style.display = 'flex';
       document.getElementById('cam-btn').textContent = '▶ Start Camera';
       document.getElementById('cam-btn').style.display = 'inline-block';
+      document.getElementById('flip-btn').style.display = 'none';
       document.getElementById('retake-btn').style.display = 'none';
       document.getElementById('scan-overlay').classList.remove('active');
       stream = null;
@@ -1140,6 +1155,7 @@
       document.getElementById('cam-placeholder').style.display = 'flex';
       document.getElementById('cam-btn').textContent = '▶ Start Camera';
       document.getElementById('cam-btn').style.display = 'inline-block';
+      document.getElementById('flip-btn').style.display = 'none';
       document.getElementById('retake-btn').style.display = 'none';
       document.getElementById('scan-overlay').classList.remove('active');
 

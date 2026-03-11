@@ -741,12 +741,12 @@
         <div class="upload-area" id="drop-zone">
           <input type="file" id="file-input" accept="image/*" />
           <div class="upload-icon">🖼</div>
-          <div class="upload-label">Drop your fit here or <span>click to browse</span></div>
-          <div class="upload-label" style="margin-top:6px; font-size:10px;">JPEG · PNG · WEBP · GIF · max 5MB</div>
+          <div class="upload-label" id="upload-label">Drop your fit here or <span>click to browse</span></div>
+          <div class="upload-label" id="upload-sub" style="margin-top:6px; font-size:10px;">JPEG · PNG · WEBP · GIF · max 5MB</div>
         </div>
         <div id="preview-wrap">
           <img id="preview-img" src="" alt="preview" />
-          <button class="clear-btn" onclick="clearImage()">✕ Clear</button>
+          <button class="clear-btn" id="clear-btn" onclick="clearImage()">✕ Clear</button>
         </div>
       </div>
 
@@ -755,7 +755,7 @@
         <div class="camera-body">
           <div class="camera-placeholder" id="cam-placeholder">
             <div class="camera-icon">📸</div>
-            <p class="placeholder-text">Awaiting camera<br><span style="color:#444">click start to activate</span></p>
+            <p class="placeholder-text" id="cam-placeholder-text">Awaiting camera<br><span id="cam-placeholder-sub" style="color:#444">click start to activate</span></p>
           </div>
           <video id="video" autoplay playsinline muted></video>
           <canvas id="canvas"></canvas>
@@ -815,29 +815,29 @@
             </div>
           </div>
           <div class="score-verdict">
-            <div class="verdict-label">Overall Verdict</div>
+            <div class="verdict-label" id="verdict-label">Overall Verdict</div>
             <div id="res-verdict">—</div>
             <div id="res-verdict-sub">—</div>
           </div>
         </div>
 
         <div class="section">
-          <div class="section-title">Category Breakdown</div>
+          <div class="section-title" id="section-categories">Category Breakdown</div>
           <div id="categories-list"></div>
         </div>
 
         <div class="section roast-section">
-          <div class="section-title accent">🔥 The Roast</div>
+          <div class="section-title accent" id="section-roast">🔥 The Roast</div>
           <div class="roast-text" id="res-roast"></div>
         </div>
 
         <div class="section">
-          <div class="section-title green">✦ Actual Advice (fr fr)</div>
+          <div class="section-title green" id="section-tips">✦ Actual Advice (fr fr)</div>
           <div id="res-tips"></div>
         </div>
       </div>
 
-      <button class="reset-btn" onclick="resetApp()">⟳ Check Another Fit</button>
+      <button class="reset-btn" id="reset-btn" onclick="resetApp()">⟳ Check Another Fit</button>
     </div>
 
     <div class="footer">FITCHECK.EXE — POWERED BY AI — NO FITS WERE HARMED</div>
@@ -852,24 +852,116 @@
     let facingMode = 'user'; // 'user' = front, 'environment' = back
     let lang = 'en';
 
+    const UI_TEXT = {
+      en: {
+        tabUpload: '⬆ Upload',
+        tabCamera: '📷 Camera',
+        uploadLabel: 'Drop your fit here or <span>click to browse</span>',
+        uploadSub: 'JPEG · PNG · WEBP · GIF · max 5MB',
+        clearBtn: '✕ Clear',
+        camStart: '▶ Start Camera',
+        camCapture: '📸 Capture',
+        camFlip: '🔄 Flip',
+        camRetake: '↩ Retake',
+        camPlaceholder: 'Awaiting camera',
+        camPlaceholderSub: 'click start to activate',
+        camDenied: '⚠ Camera access denied — use the Upload tab instead.',
+        submitBtn: '⚡ RATE MY FIT',
+        resetBtn: '⟳ Check Another Fit',
+        verdictLabel: 'Overall Verdict',
+        sectionCategories: 'Category Breakdown',
+        sectionRoast: '🔥 The Roast',
+        sectionTips: '✦ Actual Advice (fr fr)',
+        loadingMsgs: [
+          "Consulting the drip council...",
+          "Measuring rizz levels...",
+          "Calculating your L...",
+          "Cross-referencing with vogue archives...",
+          "Scanning for fit violations...",
+          "Deploying fashion AI...",
+          "Analyzing the sauce...",
+          "Checking if it's giving...",
+          "Rating the swag index...",
+          "Summoning the fashion gods...",
+        ],
+        errInvalidType: 'Invalid file type. Please upload a JPEG, PNG, WEBP, or GIF.',
+        errTooLarge: 'File is too large. Max size is 5MB.',
+        errRateLimit: 'Daily limit reached. Come back tomorrow.',
+        errGeneric: 'Something went wrong. Try again.',
+        errNoOutfit: "Couldn't detect an outfit in that image. Try a clearer photo showing your full fit.",
+        errNetwork: 'Network error. Check your connection and try again.',
+      },
+      zh: {
+        tabUpload: '⬆ 上传',
+        tabCamera: '📷 拍照',
+        uploadLabel: '将穿搭图片拖到这里或<span>点击选择</span>',
+        uploadSub: 'JPEG · PNG · WEBP · GIF · 最大 5MB',
+        clearBtn: '✕ 清除',
+        camStart: '▶ 开启相机',
+        camCapture: '📸 拍摄',
+        camFlip: '🔄 翻转',
+        camRetake: '↩ 重拍',
+        camPlaceholder: '等待相机',
+        camPlaceholderSub: '点击开始以激活',
+        camDenied: '⚠ 相机访问被拒绝 — 请使用上传选项卡。',
+        submitBtn: '⚡ 评价我的穿搭',
+        resetBtn: '⟳ 再测一套',
+        verdictLabel: '综合评价',
+        sectionCategories: '分项评分',
+        sectionRoast: '🔥 毒舌点评',
+        sectionTips: '✦ 实用建议',
+        loadingMsgs: [
+          "正在咨询时尚委员会...",
+          "测量魅力值...",
+          "计算翻车概率...",
+          "对照时尚档案库...",
+          "扫描穿搭违规项...",
+          "启动时尚AI...",
+          "分析穿搭精髓...",
+          "判断是否够味...",
+          "评估潮流指数...",
+          "召唤时尚神明...",
+        ],
+        errInvalidType: '文件类型无效，请上传 JPEG、PNG、WEBP 或 GIF 格式。',
+        errTooLarge: '文件太大，最大支持 5MB。',
+        errRateLimit: '今日次数已用完，明天再来吧。',
+        errGeneric: '出错了，请重试。',
+        errNoOutfit: '未能识别到穿搭，请换一张清晰展示完整穿搭的照片。',
+        errNetwork: '网络错误，请检查网络连接后重试。',
+      },
+    };
+
     function setLang(l) {
       lang = l;
       document.getElementById('lang-en').classList.toggle('active', l === 'en');
       document.getElementById('lang-zh').classList.toggle('active', l === 'zh');
+      const t = UI_TEXT[l];
+      document.getElementById('tab-upload').textContent = t.tabUpload;
+      document.getElementById('tab-camera').textContent = t.tabCamera;
+      document.getElementById('upload-label').innerHTML = t.uploadLabel;
+      document.getElementById('upload-sub').textContent = t.uploadSub;
+      const clearBtn = document.getElementById('clear-btn');
+      if (clearBtn) clearBtn.textContent = t.clearBtn;
+      const camBtn = document.getElementById('cam-btn');
+      if (camBtn && !cameraActive) camBtn.textContent = t.camStart;
+      else if (camBtn && cameraActive) camBtn.textContent = t.camCapture;
+      const flipBtn = document.getElementById('flip-btn');
+      if (flipBtn) flipBtn.textContent = t.camFlip;
+      const retakeBtn = document.getElementById('retake-btn');
+      if (retakeBtn) retakeBtn.textContent = t.camRetake;
+      const phText = document.getElementById('cam-placeholder-text');
+      if (phText) {
+        phText.childNodes[0].textContent = t.camPlaceholder;
+        document.getElementById('cam-placeholder-sub').textContent = t.camPlaceholderSub;
+      }
+      document.getElementById('camera-denied').textContent = t.camDenied;
+      document.getElementById('submit-btn').textContent = t.submitBtn;
+      document.getElementById('reset-btn').textContent = t.resetBtn;
+      document.getElementById('verdict-label').textContent = t.verdictLabel;
+      document.getElementById('section-categories').textContent = t.sectionCategories;
+      document.getElementById('section-roast').textContent = t.sectionRoast;
+      document.getElementById('section-tips').textContent = t.sectionTips;
     }
-
-    const LOADING_MESSAGES = [
-      "Consulting the drip council...",
-      "Measuring rizz levels...",
-      "Calculating your L...",
-      "Cross-referencing with vogue archives...",
-      "Scanning for fit violations...",
-      "Deploying fashion AI...",
-      "Analyzing the sauce...",
-      "Checking if it's giving...",
-      "Rating the swag index...",
-      "Summoning the fashion gods...",
-    ];
 
     // ── Tab switching ───────────────────────────────────────────────────────
     function switchTab(tab) {
@@ -903,7 +995,7 @@
         video.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'none';
         document.getElementById('cam-placeholder').style.display = 'none';
         document.getElementById('scan-overlay').classList.add('active');
-        document.getElementById('cam-btn').textContent = '📸 Capture';
+        document.getElementById('cam-btn').textContent = UI_TEXT[lang].camCapture;
         document.getElementById('flip-btn').style.display = 'inline-block';
         cameraActive = true;
       } catch (e) {
@@ -956,7 +1048,7 @@
       document.getElementById('camera-preview-img').style.display = 'none';
       document.getElementById('camera-preview-img').src = '';
       document.getElementById('cam-placeholder').style.display = 'flex';
-      document.getElementById('cam-btn').textContent = '▶ Start Camera';
+      document.getElementById('cam-btn').textContent = UI_TEXT[lang].camStart;
       document.getElementById('cam-btn').style.display = 'inline-block';
       document.getElementById('flip-btn').style.display = 'none';
       document.getElementById('retake-btn').style.display = 'none';
@@ -986,11 +1078,11 @@
       if (!file) return;
       const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
       if (!allowed.includes(file.type)) {
-        showError('Invalid file type. Please upload a JPEG, PNG, WEBP, or GIF.');
+        showError(UI_TEXT[lang].errInvalidType);
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        showError('File is too large. Max size is 5MB.');
+        showError(UI_TEXT[lang].errTooLarge);
         return;
       }
       clearError();
@@ -1042,10 +1134,11 @@
       loadingEl.classList.add('active');
 
       let msgIdx = 0;
-      loadingMsg.textContent = LOADING_MESSAGES[0];
+      const msgs = UI_TEXT[lang].loadingMsgs;
+      loadingMsg.textContent = msgs[0];
       const msgInterval = setInterval(() => {
-        msgIdx = (msgIdx + 1) % LOADING_MESSAGES.length;
-        loadingMsg.textContent = LOADING_MESSAGES[msgIdx];
+        msgIdx = (msgIdx + 1) % msgs.length;
+        loadingMsg.textContent = msgs[msgIdx];
       }, 1800);
 
       try {
@@ -1062,15 +1155,15 @@
 
         if (!res.ok) {
           if (res.status === 429) {
-            showError(data.message || 'Daily limit reached. Come back tomorrow.');
+            showError(data.message || UI_TEXT[lang].errRateLimit);
           } else {
-            showError(data.error || 'Something went wrong. Try again.');
+            showError(data.error || UI_TEXT[lang].errGeneric);
           }
           return;
         }
 
         if (data.error === 'no_outfit') {
-          showError("Couldn't detect an outfit in that image. Try a clearer photo showing your full fit.");
+          showError(UI_TEXT[lang].errNoOutfit);
           return;
         }
 
@@ -1078,7 +1171,7 @@
       } catch (e) {
         clearInterval(msgInterval);
         loadingEl.classList.remove('active');
-        showError('Network error. Check your connection and try again.');
+        showError(UI_TEXT[lang].errNetwork);
       }
     }
 
@@ -1185,7 +1278,7 @@
       document.getElementById('camera-preview-img').style.display = 'none';
       document.getElementById('camera-preview-img').src = '';
       document.getElementById('cam-placeholder').style.display = 'flex';
-      document.getElementById('cam-btn').textContent = '▶ Start Camera';
+      document.getElementById('cam-btn').textContent = UI_TEXT[lang].camStart;
       document.getElementById('cam-btn').style.display = 'inline-block';
       document.getElementById('flip-btn').style.display = 'none';
       document.getElementById('retake-btn').style.display = 'none';

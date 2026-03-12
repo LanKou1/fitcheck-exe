@@ -3,7 +3,7 @@ import { Redis } from "@upstash/redis";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_BYTES = 5 * 1024 * 1024; // 5MB
-const DAILY_LIMIT = 20;
+const DAILY_LIMIT = 10;
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
